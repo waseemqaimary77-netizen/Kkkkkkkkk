@@ -1,0 +1,1655 @@
+=================== FILE: index.html ===================
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#1c4496" />
+    <meta name="description" content="الإعلال مع همام إسماعيل — منصة تعليمية لإتقان قاعدة الإعلال وفق المنهاج الفلسطيني للصف الثاني عشر." />
+    <meta property="og:title" content="الإعلال مع همام إسماعيل" />
+    <meta property="og:description" content="شرح منظم لقاعدة الإعلال واختبارات تفاعلية عشوائية." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <title>الإعلال مع همام إسماعيل</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
+=================== FILE: package.json ===================
+{
+  "name": "al-ilal-with-humam-ismail",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "الإعلال مع همام إسماعيل — منصة تعليمية لإتقان قاعدة الإعلال للصف الثاني عشر",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.4",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.4.1",
+    "tailwindcss": "^4.1.4",
+    "typescript": "~5.6.3",
+    "vite": "^6.3.5"
+  },
+  "engines": {
+    "node": ">=18.18"
+  }
+}
+
+=================== FILE: src/App.tsx ===================
+import { Footer } from './components/Footer';
+import { Header } from './components/Header';
+import { useHashRoute } from './hooks/useHashRoute';
+import { HomePage } from './pages/HomePage';
+import { LessonsPage } from './pages/LessonsPage';
+import { QuizPage } from './pages/QuizPage';
+
+export default function App() {
+  const route = useHashRoute();
+  return (
+    <div className="page-bg flex min-h-screen flex-col">
+      <Header route={route} />
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 pt-8">
+        {route.name === 'home' && <HomePage />}
+        {route.name === 'lessons' && <LessonsPage lessonId={route.lessonId} />}
+        {route.name === 'quiz' && <QuizPage />}
+      </main>
+      <Footer home={route.name === 'home'} />
+    </div>
+  );
+}
+
+=================== FILE: src/components/Callout.tsx ===================
+import type { ReactNode } from 'react';
+import { Lightbulb } from 'lucide-react';
+
+export function Callout({ title = 'ملاحظات مهمة', children }: { title?: string; children: ReactNode }) {
+  return (
+    <section className="rounded-2xl border border-orange-200 bg-orange-50 p-5">
+      <h3 className="mb-3 flex items-center gap-2 text-lg font-extrabold text-orange-700">
+        <Lightbulb size={20} aria-hidden /> {title}
+      </h3>
+      {children}
+    </section>
+  );
+}
+
+=================== FILE: src/components/ExampleGroup.tsx ===================
+import type { ReactNode } from 'react';
+import { ArrowLeft, Check } from 'lucide-react';
+import type { Group } from '../types';
+import { Marked } from './Marked';
+
+function Badge({ children, tone }: { children: ReactNode; tone: 'orange' | 'green' | 'blue' }) {
+  const t = {
+    orange: 'bg-orange-50 text-orange-700 border-orange-200',
+    green: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    blue: 'bg-brand-50 text-brand-700 border-brand-200',
+  }[tone];
+  return <span className={`inline-flex items-center rounded-lg border px-2.5 py-0.5 text-sm font-bold ${t}`}>{children}</span>;
+}
+
+export function ExampleGroup({ group }: { group: Group }) {
+  return (
+    <div className="mb-8 last:mb-0">
+      <h3 className="mb-3 rounded-xl bg-brand-50 px-4 py-2.5 text-base font-extrabold text-brand-800">{group.title}</h3>
+      {group.intro && <p className="mb-3 text-slate-600">{group.intro}</p>}
+
+      {group.kind === 'analysis' && (
+        <div className="grid gap-3 md:grid-cols-2">
+          {group.examples.map((e) => (
+            <article key={e.word + e.original} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <Marked text={e.word} className="text-3xl font-extrabold text-slate-800" />
+                <span className="flex items-center gap-1.5 text-sm text-slate-500">
+                  أصلها: <Marked text={e.original} className="text-lg font-bold text-slate-700" />
+                </span>
+              </div>
+              {e.evidence && (
+                <p className="mt-2 text-sm text-slate-500">
+                  <span className="font-bold text-slate-600">الدليل: </span>
+                  {e.evidence}
+                </p>
+              )}
+              <p className="mt-2 flex gap-2 rounded-xl bg-emerald-50 px-3 py-2 text-sm font-semibold leading-7 text-emerald-800">
+                <Check size={18} className="mt-1 shrink-0" aria-hidden />
+                <span>{e.reason}</span>
+              </p>
+            </article>
+          ))}
+        </div>
+      )}
+
+      {group.kind === 'origin' && (
+        <ul className="space-y-2">
+          {group.examples.map((e) => (
+            <li key={e.word} className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl border border-slate-200 bg-white px-4 py-3">
+              <span className="min-w-20 text-xl font-extrabold text-slate-800">{e.word}</span>
+              <Badge tone="orange">الأصل: {e.answer}</Badge>
+              <span className="text-sm text-slate-600">{e.evidence}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {group.kind === 'weight' && (
+        <ul className="space-y-2">
+          {group.examples.map((e) => (
+            <li key={e.word} className="flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3">
+              <span className="min-w-20 text-xl font-extrabold text-slate-800">{e.word}</span>
+              <ArrowLeft size={18} className="text-slate-400" aria-hidden />
+              <Badge tone="orange">أصلها: {e.original}</Badge>
+              <ArrowLeft size={18} className="text-slate-400" aria-hidden />
+              <Badge tone="green">وزنها: {e.weight}</Badge>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {group.kind === 'agent' && (
+        <>
+          <ul className="space-y-2">
+            {group.examples.map((e) => (
+              <li key={e.verb} className="flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                <span className="min-w-16 text-xl font-extrabold text-slate-800">{e.verb}</span>
+                <ArrowLeft size={18} className="text-slate-400" aria-hidden />
+                <Badge tone="green">{e.agent}</Badge>
+                <span className="text-sm text-slate-600">أصلها: {e.original}</span>
+              </li>
+            ))}
+          </ul>
+          {group.analysis && (
+            <p className="mt-3 flex gap-2 rounded-xl bg-emerald-50 px-3 py-2 text-sm font-semibold leading-7 text-emerald-800">
+              <Check size={18} className="mt-1 shrink-0" aria-hidden />
+              <span>{group.analysis}</span>
+            </p>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+=================== FILE: src/components/Footer.tsx ===================
+import logo from '../assets/logo.webp';
+
+export function Footer({ home = false }: { home?: boolean }) {
+  return (
+    <footer className="mt-16 border-t border-brand-100 bg-white/80">
+      <div className="mx-auto flex max-w-5xl flex-col items-center gap-2 px-4 py-8 text-center">
+        <img src={logo} alt="" className="h-14 w-14 rounded-full" loading="lazy" />
+        {home && <p className="text-sm font-semibold text-brand-700">إعداد وتقديم الأستاذ همام إسماعيل</p>}
+        <p className="text-sm text-slate-500">جميع الحقوق محفوظة © للأستاذ همام إسماعيل</p>
+      </div>
+    </footer>
+  );
+}
+
+=================== FILE: src/components/Header.tsx ===================
+import { BookOpen, ClipboardCheck } from 'lucide-react';
+import logo from '../assets/logo.webp';
+import type { Route } from '../hooks/useHashRoute';
+
+const tabs = [
+  { href: '#/lessons', name: 'lessons', label: 'شرح قاعدة الإعلال', Icon: BookOpen },
+  { href: '#/quiz', name: 'quiz', label: 'اختبر نفسك', Icon: ClipboardCheck },
+] as const;
+
+export function Header({ route }: { route: Route }) {
+  return (
+    <header className="sticky top-0 z-30 border-b border-brand-100 bg-white/90 backdrop-blur">
+      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2.5">
+        <a href="#/" className="flex items-center gap-2.5" aria-label="الصفحة الرئيسية">
+          <img src={logo} alt="شعار الإعلال مع همام إسماعيل" className="h-11 w-11 rounded-full shadow-sm" />
+          <span className="leading-tight">
+            <span className="block text-lg font-extrabold text-brand-800">الإعلال</span>
+            <span className="block text-xs font-semibold text-slate-500">مع همام إسماعيل</span>
+          </span>
+        </a>
+        <nav className="flex w-full gap-2 sm:w-auto" aria-label="القائمة الرئيسية">
+          {tabs.map(({ href, name, label, Icon }) => {
+            const active = route.name === name;
+            return (
+              <a
+                key={name}
+                href={href}
+                aria-current={active ? 'page' : undefined}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition sm:flex-none ${
+                  active
+                    ? 'bg-brand-700 text-white shadow-sm'
+                    : 'bg-brand-50 text-brand-700 hover:bg-brand-100'
+                }`}
+              >
+                <Icon size={18} aria-hidden />
+                {label}
+              </a>
+            );
+          })}
+        </nav>
+      </div>
+    </header>
+  );
+}
+
+=================== FILE: src/components/LessonView.tsx ===================
+import { BookMarked, Eye, FileText, ListOrdered, Sparkles, Target } from 'lucide-react';
+import type { Lesson } from '../types';
+import { Callout } from './Callout';
+import { ExampleGroup } from './ExampleGroup';
+import { RuleDiagram } from './RuleDiagram';
+import { SectionTitle } from './SectionTitle';
+
+const TYPE_TARGETS = ['alif', 'hamza', 'waw-ya', 'ya-waw'];
+
+export function LessonView({ lesson }: { lesson: Lesson }) {
+  return (
+    <article className="animate-rise space-y-8" aria-labelledby="lesson-title">
+      <header className="rounded-3xl bg-gradient-to-l from-brand-700 to-brand-500 px-6 py-7 text-white shadow-md">
+        <h1 id="lesson-title" className="text-2xl font-extrabold sm:text-3xl">{lesson.title}</h1>
+      </header>
+
+      <section>
+        <SectionTitle icon={<BookMarked size={20} aria-hidden />}>التعريف</SectionTitle>
+        <p className="rounded-2xl border-r-4 border-brand-500 bg-brand-50 px-5 py-4 text-lg font-semibold leading-9 text-brand-900">
+          {lesson.definition}
+        </p>
+      </section>
+
+      <section>
+        <SectionTitle icon={<FileText size={20} aria-hidden />} tone="sky">الشرح المبسّط</SectionTitle>
+        <div className="space-y-3 text-lg leading-9 text-slate-700">
+          {lesson.explanation.map((p) => <p key={p}>{p}</p>)}
+        </div>
+      </section>
+
+      {lesson.rule && (
+        <section>
+          <SectionTitle icon={<Target size={20} aria-hidden />} tone="green">القاعدة في لمحة</SectionTitle>
+          <RuleDiagram rule={lesson.rule} />
+        </section>
+      )}
+
+      {lesson.types && (
+        <section>
+          <SectionTitle icon={<Sparkles size={20} aria-hidden />} tone="green">أنواع الإعلال بالقلب</SectionTitle>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {lesson.types.map((t, i) => (
+              <a
+                key={t.title}
+                href={`#/lessons/${TYPE_TARGETS[i]}`}
+                className="group rounded-2xl border border-brand-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-100 text-lg font-extrabold text-brand-700">{i + 1}</span>
+                  <div>
+                    <p className="font-extrabold text-slate-800">{t.title}</p>
+                    <p className="text-sm text-slate-500">أمثلة: {t.example}</p>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section>
+        <SectionTitle icon={<ListOrdered size={20} aria-hidden />}>خطوات تطبيق القاعدة</SectionTitle>
+        <ol className="space-y-3">
+          {lesson.steps.map((s, i) => (
+            <li key={s} className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-600 font-extrabold text-white">{i + 1}</span>
+              <span className="pt-0.5 text-slate-700">{s}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      {lesson.groups.length > 0 && (
+        <section>
+          <SectionTitle icon={<Eye size={20} aria-hidden />} tone="green">الأمثلة وتحليلها</SectionTitle>
+          {lesson.groups.some((g) => g.kind === 'analysis') && (
+            <p className="mb-4 flex flex-wrap items-center gap-2 text-sm text-slate-600">
+              <span className="mk-orig px-1.5 font-bold">الحرف الأصلي</span>
+              <span className="mk-new px-1.5 font-bold">الحرف بعد الإعلال</span>
+            </p>
+          )}
+          {lesson.groups.map((g) => <ExampleGroup key={g.title} group={g} />)}
+        </section>
+      )}
+
+      {lesson.notes.length > 0 && (
+        <Callout>
+          <ul className="space-y-2.5 pr-1">
+            {lesson.notes.map((n) => (
+              <li key={n} className="flex gap-2 leading-8 text-slate-700">
+                <span className="mt-3 h-2 w-2 shrink-0 rounded-full bg-orange-400" aria-hidden />
+                <span>{n}</span>
+              </li>
+            ))}
+          </ul>
+        </Callout>
+      )}
+
+      {lesson.summary.length > 0 && (
+        <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+          <h3 className="mb-3 text-lg font-extrabold text-emerald-800">الخلاصة</h3>
+          <ul className="space-y-2">
+            {lesson.summary.map((s) => (
+              <li key={s} className="flex gap-2 font-semibold leading-8 text-emerald-900">
+                <span className="mt-3 h-2 w-2 shrink-0 rounded-full bg-emerald-500" aria-hidden />
+                <span>{s}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </article>
+  );
+}
+
+=================== FILE: src/components/Marked.tsx ===================
+import { Fragment } from 'react';
+
+/**
+ * يعرض نصًّا فيه ترميز: [x] = الحرف الأصلي (برتقالي) ، {x} = الحرف بعد الإعلال (أخضر).
+ * نكتفي باللون والخلفية دون هوامش حتى لا ينقطع اتصال الحروف العربية.
+ */
+export function Marked({ text, className = '' }: { text: string; className?: string }) {
+  const parts = text.split(/(\[[^\]]+\]|\{[^}]+\})/g).filter((p) => p !== '');
+  return (
+    <span className={className}>
+      {parts.map((p, i) => {
+        if (p.startsWith('[') && p.endsWith(']'))
+          return <span key={i} className="mk-orig">{p.slice(1, -1)}</span>;
+        if (p.startsWith('{') && p.endsWith('}'))
+          return <span key={i} className="mk-new">{p.slice(1, -1)}</span>;
+        return <Fragment key={i}>{p}</Fragment>;
+      })}
+    </span>
+  );
+}
+
+/** يزيل ترميز التمييز ويعيد النص العادي */
+export function plain(text: string): string {
+  return text.replace(/[[\]{}]/g, '');
+}
+
+=================== FILE: src/components/ProgressBar.tsx ===================
+export function ProgressBar({ value, max, label }: { value: number; max: number; label?: string }) {
+  const pct = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0;
+  return (
+    <div
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={max}
+      aria-valuenow={value}
+      aria-label={label}
+      className="h-2.5 w-full overflow-hidden rounded-full bg-brand-100"
+    >
+      <div className="h-full rounded-full bg-brand-600 transition-all duration-500" style={{ width: `${pct}%` }} />
+    </div>
+  );
+}
+
+=================== FILE: src/components/QuizQuestion.tsx ===================
+import { ArrowLeft, CheckCircle2, XCircle } from 'lucide-react';
+import type { QuizItem } from '../types';
+import { ProgressBar } from './ProgressBar';
+
+export const LABELS = ['أ', 'ب', 'ج', 'د'];
+
+interface Props {
+  item: QuizItem;
+  index: number;
+  total: number;
+  selected: number | null;
+  confirmed: boolean;
+  onSelect: (i: number) => void;
+  onConfirm: () => void;
+  onNext: () => void;
+}
+
+export function QuizQuestion({ item, index, total, selected, confirmed, onSelect, onConfirm, onNext }: Props) {
+  const isCorrect = confirmed && selected === item.correctIndex;
+  const last = index === total - 1;
+
+  return (
+    <div className="animate-rise space-y-5" key={item.id}>
+      <div>
+        <div className="mb-2 flex items-center justify-between text-sm font-bold text-slate-600">
+          <span>السؤال {index + 1} من {total}</span>
+          <span className="text-slate-400">{item.topic}</span>
+        </div>
+        <ProgressBar value={index + (confirmed ? 1 : 0)} max={total} label="تقدم الاختبار" />
+      </div>
+
+      <section className="rounded-3xl border border-brand-100 bg-white p-6 shadow-sm">
+        <h2 className="text-2xl font-extrabold leading-10 text-slate-800">{item.text}</h2>
+
+        <div role="radiogroup" aria-label="الخيارات" className="mt-5 space-y-3">
+          {item.options.map((opt, i) => {
+            const chosen = selected === i;
+            const correct = confirmed && i === item.correctIndex;
+            const wrong = confirmed && chosen && i !== item.correctIndex;
+            let cls = 'border-slate-200 bg-white hover:border-brand-300 hover:bg-brand-50';
+            if (!confirmed && chosen) cls = 'border-brand-600 bg-brand-50 ring-2 ring-brand-200';
+            if (correct) cls = 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-200';
+            if (wrong) cls = 'border-red-500 bg-red-50 ring-2 ring-red-200';
+            if (confirmed && !correct && !wrong) cls = 'border-slate-200 bg-white opacity-60';
+            return (
+              <button
+                key={opt}
+                type="button"
+                role="radio"
+                aria-checked={chosen}
+                disabled={confirmed}
+                onClick={() => onSelect(i)}
+                className={`flex w-full items-center gap-3 rounded-2xl border-2 px-4 py-3.5 text-right text-lg font-semibold text-slate-800 transition ${cls} ${confirmed ? 'cursor-default' : 'cursor-pointer'}`}
+              >
+                <span
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-base font-extrabold ${
+                    correct ? 'bg-emerald-500 text-white' : wrong ? 'bg-red-500 text-white' : chosen ? 'bg-brand-600 text-white' : 'bg-brand-100 text-brand-700'
+                  }`}
+                >
+                  {correct ? <CheckCircle2 size={20} aria-hidden /> : wrong ? <XCircle size={20} aria-hidden /> : LABELS[i]}
+                </span>
+                <span className="flex-1 leading-8">{opt}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {!confirmed && (
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={selected === null}
+            className="mt-6 w-full rounded-2xl bg-brand-700 px-6 py-3.5 text-lg font-extrabold text-white shadow-sm transition enabled:hover:bg-brand-800 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 sm:w-auto"
+          >
+            تأكيد الإجابة
+          </button>
+        )}
+      </section>
+
+      {confirmed && (
+        <section
+          aria-live="polite"
+          className={`animate-pop rounded-3xl border-2 p-5 ${isCorrect ? 'border-emerald-300 bg-emerald-50' : 'border-red-300 bg-red-50'}`}
+        >
+          <p className={`flex items-center gap-2 text-xl font-extrabold ${isCorrect ? 'text-emerald-700' : 'text-red-700'}`}>
+            {isCorrect ? <CheckCircle2 aria-hidden /> : <XCircle aria-hidden />}
+            {isCorrect ? 'إجابة صحيحة، أحسنت!' : 'إجابة خاطئة'}
+          </p>
+          {!isCorrect && (
+            <p className="mt-2 font-semibold text-slate-700">
+              الإجابة الصحيحة: <span className="font-extrabold text-emerald-700">{item.options[item.correctIndex]}</span>
+            </p>
+          )}
+          <p className="mt-3 rounded-xl bg-white/80 p-3 leading-8 text-slate-700">
+            <span className="font-extrabold text-brand-700">التفسير: </span>
+            {item.explanation}
+          </p>
+          <button
+            type="button"
+            onClick={onNext}
+            className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-brand-700 px-6 py-3 font-extrabold text-white shadow-sm transition hover:bg-brand-800"
+          >
+            {last ? 'عرض النتيجة' : 'السؤال التالي'} <ArrowLeft size={18} aria-hidden />
+          </button>
+        </section>
+      )}
+    </div>
+  );
+}
+
+=================== FILE: src/components/QuizResult.tsx ===================
+import { BookOpen, CheckCircle2, ClipboardList, RotateCcw, XCircle } from 'lucide-react';
+import { messageFor } from '../utils/quiz';
+
+interface Props {
+  correct: number;
+  wrong: number;
+  total: number;
+  onReview: () => void;
+  onRestart: () => void;
+}
+
+export function QuizResult({ correct, wrong, total, onReview, onRestart }: Props) {
+  const percent = total ? Math.round((correct / total) * 100) : 0;
+  const msg = messageFor(percent);
+  const R = 52;
+  const C = 2 * Math.PI * R;
+  const good = percent >= 60;
+
+  return (
+    <div className="animate-rise space-y-6">
+      <section className="rounded-3xl border border-brand-100 bg-white p-8 text-center shadow-sm">
+        <h1 className="text-2xl font-extrabold text-slate-800">نتيجة الاختبار</h1>
+
+        <div className="relative mx-auto mt-6 h-44 w-44" role="img" aria-label={`العلامة ${correct} من ${total}`}>
+          <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
+            <circle cx="60" cy="60" r={R} fill="none" stroke="#dce8ff" strokeWidth="10" />
+            <circle
+              cx="60" cy="60" r={R} fill="none"
+              stroke={good ? '#10b981' : '#f97316'} strokeWidth="10" strokeLinecap="round"
+              strokeDasharray={C} strokeDashoffset={C * (1 - percent / 100)}
+              style={{ transition: 'stroke-dashoffset 0.8s ease' }}
+            />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="text-4xl font-extrabold text-slate-800">{correct}<span className="text-xl text-slate-400"> / {total}</span></span>
+            <span className="text-lg font-bold text-brand-700">{percent}%</span>
+          </div>
+        </div>
+
+        <div className="mt-6 grid grid-cols-2 gap-3">
+          <div className="rounded-2xl bg-emerald-50 p-3">
+            <p className="flex items-center justify-center gap-1.5 text-sm font-bold text-emerald-700"><CheckCircle2 size={18} aria-hidden /> إجابات صحيحة</p>
+            <p className="text-3xl font-extrabold text-emerald-700">{correct}</p>
+          </div>
+          <div className="rounded-2xl bg-red-50 p-3">
+            <p className="flex items-center justify-center gap-1.5 text-sm font-bold text-red-700"><XCircle size={18} aria-hidden /> إجابات خاطئة</p>
+            <p className="text-3xl font-extrabold text-red-700">{wrong}</p>
+          </div>
+        </div>
+
+        <div className="mt-6 rounded-2xl bg-brand-50 p-4">
+          <p className="text-xl font-extrabold text-brand-800">{msg.title}</p>
+          <p className="mt-1 leading-8 text-slate-600">{msg.text}</p>
+        </div>
+
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+          <button type="button" onClick={onReview} className="inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-brand-200 bg-white px-6 py-3 font-extrabold text-brand-700 hover:bg-brand-50">
+            <ClipboardList size={20} aria-hidden /> مراجعة الإجابات
+          </button>
+          <button type="button" onClick={onRestart} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-6 py-3 font-extrabold text-white shadow-sm hover:bg-emerald-700">
+            <RotateCcw size={20} aria-hidden /> بدء اختبار جديد
+          </button>
+        </div>
+        {!good && (
+          <a href="#/lessons" className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-brand-700 hover:underline">
+            <BookOpen size={16} aria-hidden /> راجع شرح القاعدة
+          </a>
+        )}
+      </section>
+    </div>
+  );
+}
+
+=================== FILE: src/components/QuizReview.tsx ===================
+import { ArrowRight, CheckCircle2, RotateCcw, XCircle } from 'lucide-react';
+import type { QuizItem } from '../types';
+import { LABELS } from './QuizQuestion';
+
+interface Props {
+  items: QuizItem[];
+  answers: (number | null)[];
+  onBack: () => void;
+  onRestart: () => void;
+}
+
+export function QuizReview({ items, answers, onBack, onRestart }: Props) {
+  return (
+    <div className="animate-rise space-y-5">
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-extrabold text-slate-800">مراجعة الإجابات</h1>
+        <button type="button" onClick={onBack} className="inline-flex items-center gap-1.5 rounded-xl bg-brand-50 px-4 py-2 text-sm font-bold text-brand-700 hover:bg-brand-100">
+          <ArrowRight size={16} aria-hidden /> العودة للنتيجة
+        </button>
+      </div>
+
+      {items.map((it, i) => {
+        const mine = answers[i];
+        const ok = mine === it.correctIndex;
+        return (
+          <article key={it.id} className={`rounded-3xl border-2 bg-white p-5 shadow-sm ${ok ? 'border-emerald-200' : 'border-red-200'}`}>
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-sm font-bold text-slate-500">السؤال {i + 1}</span>
+              <span className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-0.5 text-sm font-extrabold ${ok ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                {ok ? <CheckCircle2 size={16} aria-hidden /> : <XCircle size={16} aria-hidden />}
+                {ok ? 'صحيحة' : 'خاطئة'}
+              </span>
+            </div>
+            <h2 className="text-xl font-extrabold leading-9 text-slate-800">{it.text}</h2>
+            <dl className="mt-3 space-y-2 text-base">
+              <div className={`rounded-xl px-3 py-2 ${ok ? 'bg-emerald-50' : 'bg-red-50'}`}>
+                <dt className="text-sm font-bold text-slate-500">إجابتك</dt>
+                <dd className={`font-bold ${ok ? 'text-emerald-800' : 'text-red-800'}`}>
+                  {mine === null ? 'لم تجب' : `${LABELS[mine]}) ${it.options[mine]}`}
+                </dd>
+              </div>
+              {!ok && (
+                <div className="rounded-xl bg-emerald-50 px-3 py-2">
+                  <dt className="text-sm font-bold text-slate-500">الإجابة الصحيحة</dt>
+                  <dd className="font-bold text-emerald-800">{LABELS[it.correctIndex]}) {it.options[it.correctIndex]}</dd>
+                </div>
+              )}
+              <div className="rounded-xl bg-brand-50 px-3 py-2">
+                <dt className="text-sm font-bold text-slate-500">التفسير</dt>
+                <dd className="leading-8 text-slate-700">{it.explanation}</dd>
+              </div>
+            </dl>
+          </article>
+        );
+      })}
+
+      <button type="button" onClick={onRestart} className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-6 py-3.5 text-lg font-extrabold text-white shadow-sm hover:bg-emerald-700 sm:w-auto">
+        <RotateCcw size={20} aria-hidden /> بدء اختبار جديد
+      </button>
+    </div>
+  );
+}
+
+=================== FILE: src/components/QuizStart.tsx ===================
+import { useState } from 'react';
+import { AlertTriangle, History, PlayCircle, RotateCcw, Shuffle, Trash2 } from 'lucide-react';
+import type { Store } from '../types';
+import { QUIZ_SIZE } from '../utils/quiz';
+import { ProgressBar } from './ProgressBar';
+
+interface Props {
+  bankSize: number;
+  seenCount: number;
+  canStart: boolean;
+  store: Store;
+  onStart: () => void;
+  onResetCycle: () => void;
+  onClearHistory: () => void;
+}
+
+function pct(score: number, total: number) {
+  return total ? Math.round((score / total) * 100) : 0;
+}
+
+export function QuizStart({ bankSize, seenCount, canStart, store, onStart, onResetCycle, onClearHistory }: Props) {
+  const [confirming, setConfirming] = useState<null | 'cycle' | 'history'>(null);
+  const attempts = store.attempts;
+  const best = attempts.reduce((m, a) => Math.max(m, pct(a.score, a.total)), 0);
+  const avg = attempts.length ? Math.round(attempts.reduce((s, a) => s + pct(a.score, a.total), 0) / attempts.length) : 0;
+  const last = attempts.slice(-5).reverse();
+
+  return (
+    <div className="animate-rise space-y-6">
+      <section className="rounded-3xl bg-gradient-to-l from-emerald-600 to-emerald-500 px-6 py-8 text-white shadow-md">
+        <h1 className="text-3xl font-extrabold">اختبر نفسك</h1>
+        <p className="mt-2 max-w-2xl leading-8 text-emerald-50">
+          كل اختبار يضم {QUIZ_SIZE} أسئلة تُختار عشوائيًا من بنك الأسئلة، وتُخلط خياراتها في كل محاولة. يمكنك إعادة الاختبار بلا حدود.
+        </p>
+        {canStart ? (
+          <button
+            type="button"
+            onClick={onStart}
+            className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-white px-7 py-3.5 text-lg font-extrabold text-emerald-700 shadow-sm transition hover:scale-[1.02] hover:bg-emerald-50 active:scale-100"
+          >
+            <PlayCircle size={24} aria-hidden /> ابدأ الاختبار
+          </button>
+        ) : (
+          <p className="mt-6 flex items-start gap-2 rounded-2xl bg-white/95 p-4 font-semibold text-orange-700" role="alert">
+            <AlertTriangle className="mt-1 shrink-0" size={20} aria-hidden />
+            لا يتوفر في بنك الأسئلة {QUIZ_SIZE} أسئلة على الأقل (المتوفر حاليًا: {bankSize}). أضف المزيد من الأسئلة إلى الملف
+            <code dir="ltr" className="mx-1">src/data/questions.json</code> لبدء الاختبار.
+          </p>
+        )}
+      </section>
+
+      <section className="grid gap-3 sm:grid-cols-3">
+        {[
+          { label: 'عدد المحاولات', value: String(attempts.length) },
+          { label: 'أفضل نتيجة', value: attempts.length ? `${best}%` : '—' },
+          { label: 'المتوسط', value: attempts.length ? `${avg}%` : '—' },
+        ].map((s) => (
+          <div key={s.label} className="rounded-2xl border border-brand-100 bg-white p-4 text-center shadow-sm">
+            <p className="text-sm font-semibold text-slate-500">{s.label}</p>
+            <p className="text-3xl font-extrabold text-brand-700">{s.value}</p>
+          </div>
+        ))}
+      </section>
+
+      <section className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <h2 className="flex items-center gap-2 font-extrabold text-slate-800"><Shuffle size={18} aria-hidden /> الدورة الحالية (الدورة رقم {store.cycle})</h2>
+          <span className="text-sm font-semibold text-slate-500">ظهر {seenCount} من {bankSize} سؤالًا</span>
+        </div>
+        <ProgressBar value={seenCount} max={bankSize} label="الأسئلة التي ظهرت في الدورة الحالية" />
+        <p className="mt-3 text-sm leading-7 text-slate-500">
+          نتجنّب تكرار الأسئلة التي ظهرت لك على هذا الجهاز حتى يُستنفد البنك، ثم تبدأ دورة جديدة بترتيب مختلف.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button type="button" onClick={() => setConfirming('cycle')} className="inline-flex items-center gap-2 rounded-xl border border-brand-200 bg-white px-4 py-2 text-sm font-bold text-brand-700 hover:bg-brand-50">
+            <RotateCcw size={16} aria-hidden /> بدء دورة جديدة
+          </button>
+        </div>
+        {confirming === 'cycle' && (
+          <div className="mt-3 rounded-xl bg-orange-50 p-3 text-sm text-orange-800" role="alertdialog" aria-label="تأكيد بدء دورة جديدة">
+            <p className="font-semibold">سيُعاد اعتبار جميع الأسئلة «جديدة». تبقى نتائجك السابقة محفوظة.</p>
+            <div className="mt-2 flex gap-2">
+              <button type="button" onClick={() => { onResetCycle(); setConfirming(null); }} className="rounded-lg bg-orange-600 px-4 py-1.5 font-bold text-white">تأكيد</button>
+              <button type="button" onClick={() => setConfirming(null)} className="rounded-lg bg-white px-4 py-1.5 font-bold text-slate-600">إلغاء</button>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {attempts.length > 0 && (
+        <section className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm">
+          <h2 className="mb-3 flex items-center gap-2 font-extrabold text-slate-800"><History size={18} aria-hidden /> آخر المحاولات</h2>
+          <ul className="divide-y divide-slate-100">
+            {last.map((a) => {
+              const p = pct(a.score, a.total);
+              return (
+                <li key={a.id} className="flex items-center justify-between py-2.5">
+                  <span className="text-sm text-slate-500">
+                    {new Date(a.date).toLocaleDateString('ar', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </span>
+                  <span className={`rounded-lg px-3 py-0.5 text-sm font-extrabold ${p >= 60 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                    {a.score} / {a.total} · {p}%
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+          <button type="button" onClick={() => setConfirming('history')} className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-red-600 hover:underline">
+            <Trash2 size={16} aria-hidden /> مسح سجل المحاولات
+          </button>
+          {confirming === 'history' && (
+            <div className="mt-3 rounded-xl bg-red-50 p-3 text-sm text-red-800" role="alertdialog" aria-label="تأكيد مسح السجل">
+              <p className="font-semibold">سيُحذف سجل المحاولات وتُعاد الدورة من البداية على هذا الجهاز.</p>
+              <div className="mt-2 flex gap-2">
+                <button type="button" onClick={() => { onClearHistory(); setConfirming(null); }} className="rounded-lg bg-red-600 px-4 py-1.5 font-bold text-white">مسح</button>
+                <button type="button" onClick={() => setConfirming(null)} className="rounded-lg bg-white px-4 py-1.5 font-bold text-slate-600">إلغاء</button>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+    </div>
+  );
+}
+
+=================== FILE: src/components/RuleDiagram.tsx ===================
+import { ArrowLeft } from 'lucide-react';
+import type { Rule } from '../types';
+
+const letterName: Record<string, string> = { و: 'و', ي: 'ي', ا: 'ا', ء: 'ء' };
+
+function Letter({ ch, tone }: { ch: string; tone: 'from' | 'to' }) {
+  return (
+    <span
+      className={`flex h-14 w-14 items-center justify-center rounded-2xl text-3xl font-extrabold shadow-sm ${
+        tone === 'from' ? 'bg-orange-100 text-orange-700' : 'bg-emerald-100 text-emerald-700'
+      }`}
+    >
+      {letterName[ch] ?? ch}
+    </span>
+  );
+}
+
+export function RuleDiagram({ rule }: { rule: Rule }) {
+  return (
+    <div className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm">
+      <div className="flex flex-wrap items-center justify-center gap-4">
+        <div className="flex gap-2" aria-label="الحروف الأصلية">
+          {rule.from.map((c) => <Letter key={c} ch={c} tone="from" />)}
+        </div>
+        <div className="flex flex-col items-center text-brand-600">
+          <span className="text-sm font-bold">تُقلب</span>
+          <ArrowLeft size={28} aria-hidden />
+        </div>
+        <Letter ch={rule.to} tone="to" />
+      </div>
+      <p className="mt-4 text-center text-sm font-bold text-slate-500">السبب (الشرط):</p>
+      <ul className="mt-2 space-y-2">
+        {rule.conditions.map((c) => (
+          <li key={c} className="rounded-xl bg-brand-50 px-4 py-2.5 text-center font-semibold text-brand-800">
+            {c}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+=================== FILE: src/components/SectionTitle.tsx ===================
+import type { ReactNode } from 'react';
+
+const tones = {
+  blue: 'bg-brand-100 text-brand-700',
+  green: 'bg-emerald-100 text-emerald-700',
+  orange: 'bg-orange-100 text-orange-700',
+  sky: 'bg-sky-100 text-sky-700',
+} as const;
+
+export function SectionTitle({ icon, children, tone = 'blue' }: { icon: ReactNode; children: ReactNode; tone?: keyof typeof tones }) {
+  return (
+    <h2 className="mb-4 flex items-center gap-3 text-xl font-extrabold text-slate-800">
+      <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${tones[tone]}`}>{icon}</span>
+      {children}
+    </h2>
+  );
+}
+
+=================== FILE: src/data/index.ts ===================
+import lessonsJson from './lessons.json';
+import questionsJson from './questions.json';
+import type { Lesson, Question } from '../types';
+import { validateBank } from '../utils/quiz';
+
+export const lessons = lessonsJson as unknown as Lesson[];
+
+const checked = validateBank(questionsJson);
+if (checked.errors.length > 0) {
+  // لا نُسقط التطبيق: نستبعد الأسئلة المعيبة ونُظهر السبب في Console للمطوّر فقط
+  console.warn('أسئلة تم استبعادها من بنك الأسئلة:\n' + checked.errors.join('\n'));
+}
+export const questionBank: Question[] = checked.valid;
+
+=================== FILE: src/hooks/useHashRoute.ts ===================
+import { useEffect, useState } from 'react';
+
+export type Route =
+  | { name: 'home' }
+  | { name: 'lessons'; lessonId?: string }
+  | { name: 'quiz' };
+
+export function parseHash(hash: string): Route {
+  const parts = hash.replace(/^#\/?/, '').split('/').filter(Boolean);
+  if (parts[0] === 'lessons') return { name: 'lessons', lessonId: parts[1] ? decodeURIComponent(parts[1]) : undefined };
+  if (parts[0] === 'quiz') return { name: 'quiz' };
+  return { name: 'home' };
+}
+
+export function navigate(path: string) {
+  window.location.hash = path;
+}
+
+export function useHashRoute(): Route {
+  const [route, setRoute] = useState<Route>(() => parseHash(window.location.hash));
+  useEffect(() => {
+    const onChange = () => {
+      setRoute(parseHash(window.location.hash));
+      window.scrollTo({ top: 0 });
+    };
+    window.addEventListener('hashchange', onChange);
+    return () => window.removeEventListener('hashchange', onChange);
+  }, []);
+  return route;
+}
+
+=================== FILE: src/hooks/useQuiz.ts ===================
+import { useCallback, useReducer, useRef } from 'react';
+import type { Question, QuizItem, Store } from '../types';
+import { buildQuiz, pickQuestionIds, QUIZ_SIZE } from '../utils/quiz';
+
+export type Phase = 'start' | 'question' | 'result' | 'review';
+
+interface State {
+  phase: Phase;
+  items: QuizItem[];
+  index: number;
+  selected: number | null;
+  confirmed: boolean;
+  answers: (number | null)[];
+}
+
+type Action =
+  | { type: 'start'; items: QuizItem[] }
+  | { type: 'select'; i: number }
+  | { type: 'confirm' }
+  | { type: 'next' }
+  | { type: 'phase'; phase: Phase }
+  | { type: 'reset' };
+
+const initial: State = { phase: 'start', items: [], index: 0, selected: null, confirmed: false, answers: [] };
+
+function reducer(s: State, a: Action): State {
+  switch (a.type) {
+    case 'start':
+      return { phase: 'question', items: a.items, index: 0, selected: null, confirmed: false, answers: a.items.map(() => null) };
+    case 'select':
+      if (s.phase !== 'question' || s.confirmed) return s; // لا يمكن تغيير الإجابة بعد التأكيد
+      return { ...s, selected: a.i };
+    case 'confirm': {
+      if (s.phase !== 'question' || s.confirmed || s.selected === null) return s;
+      const answers = s.answers.slice();
+      answers[s.index] = s.selected;
+      return { ...s, confirmed: true, answers };
+    }
+    case 'next':
+      if (!s.confirmed) return s;
+      if (s.index >= s.items.length - 1) return { ...s, phase: 'result' };
+      return { ...s, index: s.index + 1, selected: null, confirmed: false };
+    case 'phase':
+      return { ...s, phase: a.phase };
+    case 'reset':
+      return initial;
+    default:
+      return s;
+  }
+}
+
+export function scoreOf(items: QuizItem[], answers: (number | null)[]) {
+  const correct = items.reduce((n, it, i) => n + (answers[i] === it.correctIndex ? 1 : 0), 0);
+  return { correct, wrong: items.length - correct, total: items.length };
+}
+
+export function useQuiz(bank: Question[], store: Store, update: (fn: (s: Store) => Store) => void) {
+  const [state, dispatch] = useReducer(reducer, initial);
+  const savedRef = useRef(false);
+
+  const canStart = bank.length >= QUIZ_SIZE;
+
+  const start = useCallback(() => {
+    if (bank.length < QUIZ_SIZE) return;
+    const picked = pickQuestionIds(bank, store.seen, QUIZ_SIZE);
+    const items = buildQuiz(bank, picked.ids);
+    savedRef.current = false;
+    update((s) => ({ ...s, seen: picked.seen, cycle: picked.newCycle ? s.cycle + 1 : s.cycle }));
+    dispatch({ type: 'start', items });
+  }, [bank, store.seen, update]);
+
+  const next = useCallback(() => {
+    // عند آخر سؤال: نحفظ النتيجة مرة واحدة فقط
+    if (state.confirmed && state.index >= state.items.length - 1 && !savedRef.current) {
+      savedRef.current = true;
+      const { correct, total } = scoreOf(state.items, state.answers);
+      update((s) => ({
+        ...s,
+        attempts: [...s.attempts, { id: `${Date.now()}`, date: new Date().toISOString(), score: correct, total }],
+      }));
+    }
+    dispatch({ type: 'next' });
+  }, [state, update]);
+
+  const resetCycle = useCallback(() => {
+    update((s) => ({ ...s, seen: [], cycle: s.cycle + 1 }));
+  }, [update]);
+
+  const clearHistory = useCallback(() => {
+    update((s) => ({ ...s, attempts: [], seen: [], cycle: 1 }));
+  }, [update]);
+
+  return {
+    state,
+    canStart,
+    start,
+    next,
+    resetCycle,
+    clearHistory,
+    select: (i: number) => dispatch({ type: 'select', i }),
+    confirm: () => dispatch({ type: 'confirm' }),
+    setPhase: (phase: Phase) => dispatch({ type: 'phase', phase }),
+    reset: () => dispatch({ type: 'reset' }),
+  };
+}
+
+=================== FILE: src/hooks/useStore.ts ===================
+import { useCallback, useState } from 'react';
+import type { Store } from '../types';
+import { loadStore, saveStore } from '../utils/storage';
+
+/** حالة التقدّم المحلية (LocalStorage) — دون حسابات أو خوادم */
+export function useStore() {
+  const [store, setStore] = useState<Store>(() => loadStore());
+
+  const update = useCallback((fn: (s: Store) => Store) => {
+    setStore((prev) => {
+      const next = fn(prev);
+      saveStore(next);
+      return next;
+    });
+  }, []);
+
+  return { store, update };
+}
+
+=================== FILE: src/main.tsx ===================
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import App from './App';
+import './styles/index.css';
+
+createRoot(document.getElementById('root') as HTMLElement).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+);
+
+=================== FILE: src/pages/HomePage.tsx ===================
+import { ArrowLeft, BookOpen, ClipboardCheck } from 'lucide-react';
+import teacher from '../assets/teacher.jpg';
+import { lessons, questionBank } from '../data';
+
+export function HomePage() {
+  return (
+    <div className="space-y-12">
+      <section className="grid items-center gap-8 md:grid-cols-[1.15fr_0.85fr]">
+        <div className="animate-rise space-y-5 text-center md:text-right">
+          <span className="inline-block rounded-full bg-brand-100 px-4 py-1 text-sm font-bold text-brand-700">
+            للصف الثاني عشر (التوجيهي) · فلسطين
+          </span>
+          <h1 className="text-5xl font-extrabold leading-tight text-brand-800 sm:text-6xl">الإعلال</h1>
+          <p className="text-2xl font-bold text-gold-500">مع همام إسماعيل</p>
+          <p className="mx-auto max-w-xl text-lg leading-9 text-slate-600 md:mx-0">
+            منصة تعليمية لإتقان قاعدة الإعلال وفق المنهاج الفلسطيني للصف الثاني عشر.
+          </p>
+          <p className="text-sm font-semibold text-slate-500">إعداد وتقديم الأستاذ همام إسماعيل</p>
+        </div>
+
+        <div className="animate-pop mx-auto w-full max-w-sm">
+          <div className="relative">
+            <div className="absolute -inset-3 rounded-[2.2rem] bg-gradient-to-br from-brand-200 via-sky-100 to-amber-100" aria-hidden />
+            <img
+              src={teacher}
+              alt="الأستاذ همام إسماعيل"
+              width={900}
+              height={904}
+              className="relative aspect-square w-full rounded-[1.8rem] object-cover object-top shadow-xl ring-4 ring-white"
+            />
+            <div className="absolute inset-x-4 bottom-4 rounded-2xl bg-white/90 px-4 py-2 text-center shadow-md backdrop-blur">
+              <p className="font-extrabold text-brand-800">الأستاذ همام إسماعيل</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section aria-label="القائمتان الرئيسيتان" className="grid gap-5 md:grid-cols-2">
+        <a
+          href="#/lessons"
+          className="group animate-rise rounded-3xl border border-brand-100 bg-white p-7 shadow-sm transition hover:-translate-y-1 hover:border-brand-300 hover:shadow-lg"
+        >
+          <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-100 text-brand-700">
+            <BookOpen size={30} aria-hidden />
+          </span>
+          <h2 className="text-2xl font-extrabold text-slate-800">شرح قاعدة الإعلال</h2>
+          <p className="mt-2 leading-8 text-slate-600">
+            {lessons.length} دروس منظّمة: التعريف، الشرح المبسّط، الخطوات، الأمثلة وتحليلها، والخلاصة.
+          </p>
+          <span className="mt-5 inline-flex items-center gap-2 font-bold text-brand-700">
+            ابدأ التعلّم <ArrowLeft size={18} className="transition group-hover:-translate-x-1" aria-hidden />
+          </span>
+        </a>
+
+        <a
+          href="#/quiz"
+          className="group animate-rise rounded-3xl border border-emerald-100 bg-white p-7 shadow-sm transition hover:-translate-y-1 hover:border-emerald-300 hover:shadow-lg"
+          style={{ animationDelay: '80ms' }}
+        >
+          <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+            <ClipboardCheck size={30} aria-hidden />
+          </span>
+          <h2 className="text-2xl font-extrabold text-slate-800">اختبر نفسك</h2>
+          <p className="mt-2 leading-8 text-slate-600">
+            اختبارات عشوائية غير محدودة من 10 أسئلة، من بنك يضم {questionBank.length} سؤالًا، مع تفسير علمي لكل إجابة.
+          </p>
+          <span className="mt-5 inline-flex items-center gap-2 font-bold text-emerald-700">
+            ابدأ الاختبار <ArrowLeft size={18} className="transition group-hover:-translate-x-1" aria-hidden />
+          </span>
+        </a>
+      </section>
+    </div>
+  );
+}
+
+=================== FILE: src/pages/LessonsPage.tsx ===================
+import { useEffect } from 'react';
+import { Check, ChevronLeft, ChevronRight, ClipboardCheck } from 'lucide-react';
+import { lessons } from '../data';
+import { LessonView } from '../components/LessonView';
+import { ProgressBar } from '../components/ProgressBar';
+import { useStore } from '../hooks/useStore';
+
+export function LessonsPage({ lessonId }: { lessonId?: string }) {
+  const { store, update } = useStore();
+  const found = lessons.findIndex((l) => l.id === lessonId);
+  const index = found >= 0 ? found : 0;
+  const lesson = lessons[index];
+  const prev = lessons[index - 1];
+  const next = lessons[index + 1];
+
+  useEffect(() => {
+    if (!lesson) return;
+    update((s) => (s.visited.includes(lesson.id) ? s : { ...s, visited: [...s.visited, lesson.id] }));
+  }, [lesson, update]);
+
+  if (!lesson) {
+    return <p className="rounded-2xl bg-orange-50 p-6 text-orange-800">لا يوجد محتوى تعليمي بعد. أضف الدروس إلى الملف <code dir="ltr">src/data/lessons.json</code>.</p>;
+  }
+
+  const visitedCount = lessons.filter((l) => store.visited.includes(l.id) || l.id === lesson.id).length;
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <div className="mb-2 flex items-center justify-between text-sm font-semibold text-slate-500">
+          <span>الدرس {index + 1} من {lessons.length}</span>
+          <span>تقدّمك: {visitedCount} / {lessons.length}</span>
+        </div>
+        <ProgressBar value={visitedCount} max={lessons.length} label="تقدم الدروس" />
+      </div>
+
+      <nav aria-label="دروس القاعدة" className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+        {lessons.map((l, i) => {
+          const active = l.id === lesson.id;
+          const done = store.visited.includes(l.id);
+          return (
+            <a
+              key={l.id}
+              href={`#/lessons/${l.id}`}
+              aria-current={active ? 'page' : undefined}
+              className={`flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-bold transition ${
+                active
+                  ? 'border-brand-700 bg-brand-700 text-white shadow-sm'
+                  : 'border-brand-200 bg-white text-brand-700 hover:bg-brand-50'
+              }`}
+            >
+              <span className={`flex h-5 w-5 items-center justify-center rounded-full text-xs ${active ? 'bg-white/25' : done ? 'bg-emerald-100 text-emerald-700' : 'bg-brand-100'}`}>
+                {done && !active ? <Check size={12} aria-hidden /> : i + 1}
+              </span>
+              {l.short}
+            </a>
+          );
+        })}
+      </nav>
+
+      <LessonView key={lesson.id} lesson={lesson} />
+
+      <div className="flex flex-wrap items-stretch justify-between gap-3 pt-2">
+        {prev ? (
+          <a href={`#/lessons/${prev.id}`} className="flex flex-1 items-center gap-2 rounded-2xl border border-brand-200 bg-white px-4 py-3 font-bold text-brand-700 transition hover:bg-brand-50 sm:flex-none">
+            <ChevronRight size={20} aria-hidden />
+            <span><span className="block text-xs font-semibold text-slate-500">السابق</span>{prev.short}</span>
+          </a>
+        ) : <span className="hidden sm:block" />}
+        {next ? (
+          <a href={`#/lessons/${next.id}`} className="flex flex-1 items-center justify-end gap-2 rounded-2xl bg-brand-700 px-4 py-3 font-bold text-white shadow-sm transition hover:bg-brand-800 sm:flex-none">
+            <span className="text-left"><span className="block text-xs font-semibold text-brand-200">التالي</span>{next.short}</span>
+            <ChevronLeft size={20} aria-hidden />
+          </a>
+        ) : (
+          <a href="#/quiz" className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 font-bold text-white shadow-sm transition hover:bg-emerald-700 sm:flex-none">
+            <ClipboardCheck size={20} aria-hidden /> انتقل إلى اختبر نفسك
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
+
+=================== FILE: src/pages/QuizPage.tsx ===================
+import { useEffect } from 'react';
+import { questionBank } from '../data';
+import { QuizQuestion } from '../components/QuizQuestion';
+import { QuizResult } from '../components/QuizResult';
+import { QuizReview } from '../components/QuizReview';
+import { QuizStart } from '../components/QuizStart';
+import { scoreOf, useQuiz } from '../hooks/useQuiz';
+import { useStore } from '../hooks/useStore';
+
+export function QuizPage() {
+  const { store, update } = useStore();
+  const quiz = useQuiz(questionBank, store, update);
+  const { state } = quiz;
+
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [state.phase, state.index]);
+
+  if (state.phase === 'question') {
+    const item = state.items[state.index];
+    return (
+      <QuizQuestion
+        item={item}
+        index={state.index}
+        total={state.items.length}
+        selected={state.selected}
+        confirmed={state.confirmed}
+        onSelect={quiz.select}
+        onConfirm={quiz.confirm}
+        onNext={quiz.next}
+      />
+    );
+  }
+
+  if (state.phase === 'result' || state.phase === 'review') {
+    const { correct, wrong, total } = scoreOf(state.items, state.answers);
+    if (state.phase === 'review') {
+      return <QuizReview items={state.items} answers={state.answers} onBack={() => quiz.setPhase('result')} onRestart={quiz.start} />;
+    }
+    return <QuizResult correct={correct} wrong={wrong} total={total} onReview={() => quiz.setPhase('review')} onRestart={quiz.start} />;
+  }
+
+  const bankIds = new Set(questionBank.map((q) => q.id));
+  const seenCount = store.seen.filter((id) => bankIds.has(id)).length;
+
+  return (
+    <QuizStart
+      bankSize={questionBank.length}
+      seenCount={seenCount}
+      canStart={quiz.canStart}
+      store={store}
+      onStart={quiz.start}
+      onResetCycle={quiz.resetCycle}
+      onClearHistory={quiz.clearHistory}
+    />
+  );
+}
+
+=================== FILE: src/styles/index.css ===================
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Cairo", "IBM Plex Sans Arabic", "Segoe UI", Tahoma, system-ui, sans-serif;
+
+  --color-brand-50: #eef4ff;
+  --color-brand-100: #dce8ff;
+  --color-brand-200: #bfd5ff;
+  --color-brand-300: #93b6ff;
+  --color-brand-400: #5f8fee;
+  --color-brand-500: #3a6fd8;
+  --color-brand-600: #2756b8;
+  --color-brand-700: #1c4496;
+  --color-brand-800: #163670;
+  --color-brand-900: #102a57;
+
+  --color-gold-400: #e8b04a;
+  --color-gold-500: #d9962a;
+
+  --animate-rise: rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-pop: pop 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pop {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+  }
+}
+
+html {
+  direction: rtl;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: #1e293b;
+  background: #ffffff;
+  line-height: 1.8;
+  -webkit-font-smoothing: antialiased;
+}
+
+button { font-family: inherit; }
+
+/* خلفية فاتحة ناعمة */
+.page-bg {
+  background:
+    radial-gradient(60rem 28rem at 100% -10%, rgba(147, 182, 255, 0.28), transparent 60%),
+    radial-gradient(50rem 24rem at -10% 10%, rgba(186, 230, 253, 0.35), transparent 60%),
+    #ffffff;
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* تمييز الحروف داخل الكلمات: لون وخلفية فقط حتى لا ينكسر اتصال الحروف العربية */
+.mk-orig { color: #c2410c; background-color: #ffedd5; border-radius: 4px; }
+.mk-new { color: #047857; background-color: #d1fae5; border-radius: 4px; }
+
+:focus-visible {
+  outline: 3px solid rgba(58, 111, 216, 0.55);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+=================== FILE: src/types.ts ===================
+export type Color = 'blue' | 'green' | 'orange' | 'sky';
+
+export interface Rule {
+  from: string[];
+  to: string;
+  conditions: string[];
+}
+
+export interface LessonType {
+  title: string;
+  from: string[];
+  to: string;
+  example: string;
+}
+
+export interface AnalysisExample {
+  word: string;
+  original: string;
+  evidence: string;
+  reason: string;
+}
+export interface WeightExample {
+  word: string;
+  original: string;
+  weight: string;
+}
+export interface OriginExample {
+  word: string;
+  answer: string;
+  evidence: string;
+}
+export interface AgentExample {
+  verb: string;
+  agent: string;
+  original: string;
+}
+
+export type Group =
+  | { title: string; intro?: string; kind: 'analysis'; examples: AnalysisExample[] }
+  | { title: string; intro?: string; kind: 'weight'; examples: WeightExample[] }
+  | { title: string; intro?: string; kind: 'origin'; examples: OriginExample[] }
+  | { title: string; intro?: string; kind: 'agent'; examples: AgentExample[]; analysis?: string };
+
+export interface Lesson {
+  id: string;
+  title: string;
+  short: string;
+  color: Color;
+  icon: string;
+  definition: string;
+  explanation: string[];
+  rule: Rule | null;
+  types?: LessonType[];
+  steps: string[];
+  groups: Group[];
+  notes: string[];
+  summary: string[];
+}
+
+export interface Question {
+  id: string;
+  topic?: string;
+  text: string;
+  options: string[];
+  answer: number;
+  explanation: string;
+}
+
+/** سؤال جاهز للعرض بعد خلط الخيارات */
+export interface QuizItem {
+  id: string;
+  topic?: string;
+  text: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+}
+
+export interface Attempt {
+  id: string;
+  date: string;
+  score: number;
+  total: number;
+}
+
+export interface Store {
+  /** معرّفات الأسئلة التي ظهرت في الدورة الحالية */
+  seen: string[];
+  cycle: number;
+  attempts: Attempt[];
+  visited: string[];
+}
+
+=================== FILE: src/utils/quiz.ts ===================
+import type { Question, QuizItem } from '../types';
+import { randomInt, shuffle } from './random';
+
+export const QUIZ_SIZE = 10;
+export const OPTIONS_COUNT = 4;
+
+/** يتحقق من سلامة بنك الأسئلة ويستبعد أي سؤال معيب مع تسجيل السبب */
+export function validateBank(raw: unknown): { valid: Question[]; errors: string[] } {
+  const errors: string[] = [];
+  const valid: Question[] = [];
+  if (!Array.isArray(raw)) return { valid, errors: ['ملف الأسئلة يجب أن يكون مصفوفة'] };
+  const ids = new Set<string>();
+  raw.forEach((q, i) => {
+    const where = `السؤال رقم ${i + 1}`;
+    if (!q || typeof q !== 'object') return errors.push(`${where}: صيغة غير صحيحة`), undefined;
+    const o = q as Record<string, unknown>;
+    if (typeof o.id !== 'string' || !o.id) return errors.push(`${where}: المعرّف مفقود`), undefined;
+    if (ids.has(o.id)) return errors.push(`${where}: المعرّف ${o.id} مكرّر`), undefined;
+    if (typeof o.text !== 'string' || !o.text.trim()) return errors.push(`${o.id}: نص السؤال مفقود`), undefined;
+    if (!Array.isArray(o.options) || o.options.length !== OPTIONS_COUNT)
+      return errors.push(`${o.id}: يجب أن يحتوي السؤال على ${OPTIONS_COUNT} خيارات`), undefined;
+    if (o.options.some((x) => typeof x !== 'string' || !x.trim()))
+      return errors.push(`${o.id}: أحد الخيارات فارغ`), undefined;
+    if (new Set(o.options).size !== OPTIONS_COUNT) return errors.push(`${o.id}: خيارات مكرّرة`), undefined;
+    if (!Number.isInteger(o.answer) || (o.answer as number) < 0 || (o.answer as number) >= OPTIONS_COUNT)
+      return errors.push(`${o.id}: رقم الإجابة الصحيحة غير صالح`), undefined;
+    if (typeof o.explanation !== 'string' || !o.explanation.trim())
+      return errors.push(`${o.id}: شرح الإجابة مفقود`), undefined;
+    ids.add(o.id);
+    valid.push({
+      id: o.id,
+      topic: typeof o.topic === 'string' ? o.topic : undefined,
+      text: o.text,
+      options: o.options as string[],
+      answer: o.answer as number,
+      explanation: o.explanation,
+    });
+  });
+  return { valid, errors };
+}
+
+/**
+ * يختار معرّفات أسئلة الاختبار الجديد.
+ * - لا تكرار داخل الاختبار الواحد.
+ * - تُستبعد الأسئلة التي ظهرت في الدورة الحالية حتى تُستنفد.
+ * - عند الاستنفاد تبدأ دورة جديدة بترتيب مختلف دون تكرار داخل الاختبار نفسه.
+ */
+export function pickQuestionIds(
+  bank: readonly Question[],
+  seen: readonly string[],
+  count = QUIZ_SIZE,
+): { ids: string[]; seen: string[]; newCycle: boolean } {
+  const bankIds = bank.map((q) => q.id);
+  const bankSet = new Set(bankIds);
+  const seenValid = Array.from(new Set(seen.filter((id) => bankSet.has(id))));
+  const seenSet = new Set(seenValid);
+  const pool = shuffle(bankIds.filter((id) => !seenSet.has(id)));
+
+  if (pool.length >= count) {
+    const ids = pool.slice(0, count);
+    return { ids: shuffle(ids), seen: [...seenValid, ...ids], newCycle: false };
+  }
+  // الأسئلة المتبقية كلها تدخل، ثم تبدأ دورة جديدة ونكمل منها
+  const first = pool;
+  const firstSet = new Set(first);
+  const rest = shuffle(bankIds.filter((id) => !firstSet.has(id)));
+  const fill = rest.slice(0, count - first.length);
+  return { ids: shuffle([...first, ...fill]), seen: fill, newCycle: true };
+}
+
+function isAcceptable(a: number[]): boolean {
+  for (let i = 0; i + 2 < a.length; i++) {
+    if (a[i] === a[i + 1] && a[i + 1] === a[i + 2]) return false; // ثلاث متتالية متطابقة
+  }
+  for (let i = 0; i + 3 < a.length; i++) {
+    const d1 = (a[i + 1] - a[i] + 4) % 4;
+    const d2 = (a[i + 2] - a[i + 1] + 4) % 4;
+    const d3 = (a[i + 3] - a[i + 2] + 4) % 4;
+    if (d1 === d2 && d2 === d3 && (d1 === 1 || d1 === 3)) return false; // نمط أ ب ج د
+  }
+  return true;
+}
+
+/** مواقع الإجابات الصحيحة: موزّعة بالتساوي قدر الإمكان، مع تجنّب الأنماط المتكررة */
+export function balancedPositions(n: number): number[] {
+  for (let t = 0; t < 1000; t++) {
+    const offset = randomInt(OPTIONS_COUNT);
+    const arr = shuffle(Array.from({ length: n }, (_, i) => (i + offset) % OPTIONS_COUNT));
+    if (isAcceptable(arr)) return arr;
+  }
+  return shuffle(Array.from({ length: n }, (_, i) => i % OPTIONS_COUNT));
+}
+
+/** يبني الاختبار: يخلط الخيارات مع الحفاظ على ارتباط الإجابة الصحيحة بنصّها */
+export function buildQuiz(bank: readonly Question[], ids: readonly string[]): QuizItem[] {
+  const byId = new Map(bank.map((q) => [q.id, q]));
+  const positions = balancedPositions(ids.length);
+  return ids.map((id, i) => {
+    const q = byId.get(id);
+    if (!q) throw new Error(`سؤال غير موجود: ${id}`);
+    const correctText = q.options[q.answer];
+    const wrong = shuffle(q.options.filter((_, idx) => idx !== q.answer));
+    const options = wrong.slice();
+    options.splice(positions[i], 0, correctText);
+    return {
+      id: q.id,
+      topic: q.topic,
+      text: q.text,
+      options,
+      correctIndex: positions[i],
+      explanation: q.explanation,
+    };
+  });
+}
+
+export function messageFor(percent: number): { title: string; text: string } {
+  if (percent === 100) return { title: 'علامة كاملة! 🌟', text: 'أتقنت القاعدة بامتياز. استمر بإجراء اختبارات جديدة لتثبيت ما تعلمته.' };
+  if (percent >= 80) return { title: 'أداء رائع! 👏', text: 'أنت قريب جدًا من الإتقان. راجع الأسئلة التي أخطأت فيها لتصل إلى العلامة الكاملة.' };
+  if (percent >= 60) return { title: 'جيد، وتستطيع أفضل! 💪', text: 'لديك أساس جيد. راجع التفسيرات وأعد المحاولة باختبار جديد.' };
+  if (percent >= 40) return { title: 'بداية مقبولة 🌱', text: 'تحتاج إلى مزيد من المراجعة. عُد إلى شرح القاعدة ثم جرّب اختبارًا جديدًا.' };
+  return { title: 'لا تقلق، التعلّم رحلة 🌿', text: 'ابدأ بمراجعة الدروس بهدوء، ثم أعد المحاولة؛ ستلاحظ التحسّن سريعًا.' };
+}
+
+=================== FILE: src/utils/random.ts ===================
+/** عدد صحيح عشوائي في [0, max) باستخدام مولّد آمن إن توفّر */
+export function randomInt(max: number): number {
+  if (max <= 1) return 0;
+  const c = typeof globalThis !== 'undefined' ? (globalThis as { crypto?: Crypto }).crypto : undefined;
+  if (c && typeof c.getRandomValues === 'function') {
+    const range = 0x100000000;
+    const limit = range - (range % max);
+    const buf = new Uint32Array(1);
+    // رفض القيم الزائدة لتجنّب الانحياز
+    for (let i = 0; i < 16; i++) {
+      c.getRandomValues(buf);
+      if (buf[0] < limit) return buf[0] % max;
+    }
+  }
+  return Math.floor(Math.random() * max);
+}
+
+/** خلط فيشر-ييتس دون تعديل المصفوفة الأصلية */
+export function shuffle<T>(input: readonly T[]): T[] {
+  const a = input.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = randomInt(i + 1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+=================== FILE: src/utils/storage.ts ===================
+import type { Attempt, Store } from '../types';
+
+const KEY = 'ilal:v1:store';
+const MAX_ATTEMPTS = 100;
+
+export function emptyStore(): Store {
+  return { seen: [], cycle: 1, attempts: [], visited: [] };
+}
+
+function isStrArray(x: unknown): x is string[] {
+  return Array.isArray(x) && x.every((v) => typeof v === 'string');
+}
+
+function isAttempt(x: unknown): x is Attempt {
+  if (!x || typeof x !== 'object') return false;
+  const a = x as Record<string, unknown>;
+  return typeof a.id === 'string' && typeof a.date === 'string' && typeof a.score === 'number' && typeof a.total === 'number';
+}
+
+/** قراءة آمنة: أي خلل في التخزين (أو منعه) لا يكسر التطبيق */
+export function loadStore(): Store {
+  try {
+    const raw = window.localStorage.getItem(KEY);
+    if (!raw) return emptyStore();
+    const o = JSON.parse(raw) as Record<string, unknown>;
+    return {
+      seen: isStrArray(o.seen) ? o.seen : [],
+      cycle: typeof o.cycle === 'number' && o.cycle >= 1 ? o.cycle : 1,
+      attempts: Array.isArray(o.attempts) ? o.attempts.filter(isAttempt) : [],
+      visited: isStrArray(o.visited) ? o.visited : [],
+    };
+  } catch {
+    return emptyStore();
+  }
+}
+
+export function saveStore(s: Store): void {
+  try {
+    const trimmed: Store = { ...s, attempts: s.attempts.slice(-MAX_ATTEMPTS) };
+    window.localStorage.setItem(KEY, JSON.stringify(trimmed));
+  } catch {
+    /* التخزين غير متاح (وضع خاص مثلًا): نتجاهل بهدوء */
+  }
+}
+
+=================== FILE: src/vite-env.d.ts ===================
+/// <reference types="vite/client" />
+
+=================== FILE: vercel.json ===================
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "cleanUrls": true,
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    }
+  ]
+}
+
+=================== FILE: vite.config.ts ===================
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+  build: {
+    target: 'es2020',
+    chunkSizeWarningLimit: 700,
+  },
+});
+

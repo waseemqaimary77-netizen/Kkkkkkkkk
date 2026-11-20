@@ -1,0 +1,6 @@
+{
+  "name": "الإعلال مع همام إسماعيل",
+  "description": "منصة تعليمية لإتقان قاعدة الإعلال وفق المنهاج الفلسطيني للصف الثاني عشر، مع شرح منظم وبنك اختبارات تفاعلي.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
