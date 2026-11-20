@@ -1,9 +1,10 @@
 import logo from '../assets/logo.webp';
+import { WhatsAppContact } from './WhatsAppButton';
 
 export function Footer({ home = false }: { home?: boolean }) {
   return (
     <footer className="mt-16 border-t border-brand-100 bg-white/90">
-      <div className="mx-auto flex max-w-5xl flex-col items-center gap-2 px-4 py-8 text-center">
+      <div className="mx-auto flex max-w-5xl flex-col items-center gap-3 px-4 py-8 text-center">
         <img
           src={logo}
           alt="شعار منصة الإعلال مع همام إسماعيل"
@@ -14,6 +15,7 @@ export function Footer({ home = false }: { home?: boolean }) {
         {home && (
           <p className="text-sm font-bold text-brand-700">إعداد وتقديم الأستاذ همام إسماعيل</p>
         )}
+        <WhatsAppContact compact />
         <p className="text-sm text-slate-600">جميع الحقوق محفوظة © للأستاذ همام إسماعيل</p>
       </div>
     </footer>

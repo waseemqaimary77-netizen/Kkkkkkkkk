@@ -1,5 +1,6 @@
 import { Footer } from './components/Footer';
 import { Header } from './components/Header';
+import { WhatsAppFloatingButton } from './components/WhatsAppButton';
 import { useHashRoute } from './hooks/useHashRoute';
 import { HomePage } from './pages/HomePage';
 import { LessonsPage } from './pages/LessonsPage';
@@ -17,6 +18,7 @@ export default function App() {
         {route.name === 'quiz' && <QuizPage />}
       </main>
       <Footer home={route.name === 'home'} />
+      <WhatsAppFloatingButton />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ArrowLeft, BookOpen, ClipboardCheck, User } from 'lucide-react';
 import teacher from '../assets/teacher.jpg';
+import { WhatsAppContact } from '../components/WhatsAppButton';
 import { lessons, questionBank } from '../data';
 
 export function HomePage() {
@@ -21,6 +22,9 @@ export function HomePage() {
             منصة تعليمية لإتقان قاعدة الإعلال وفق المنهاج الفلسطيني للصف الثاني عشر.
           </p>
           <p className="text-sm font-bold text-slate-500">إعداد وتقديم الأستاذ همام إسماعيل</p>
+          <div className="pt-1">
+            <WhatsAppContact />
+          </div>
         </div>
 
         <div className="animate-pop mx-auto w-full max-w-sm">
